@@ -45,8 +45,8 @@ export const authOptions: NextAuthOptions = {
     }),
   },
   pages: {
-    signIn: "/sign-in",
-    signOut: "/sign-in",
+    signIn: "/signin",
+    signOut: "/signin",
   },
   adapter: PrismaAdapter(prisma),
   providers: [
