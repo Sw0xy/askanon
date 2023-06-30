@@ -1,9 +1,7 @@
 import { type Session } from "next-auth";
-import { SessionProvider, useSession } from "next-auth/react";
+import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { type AppType } from "next/app";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
 import { Toaster } from "~/components/ui/toaster";
 import "~/styles/globals.css";
 import { api } from "~/utils/api";
