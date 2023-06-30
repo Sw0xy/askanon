@@ -1,0 +1,104 @@
+generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["jsonProtocol", "fullTextSearch"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// Necessary for Next auth
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? // @db.Text
+    access_token      String? //@db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? // @db.Text
+    session_state     String?
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+    id            String      @id @default(cuid())
+    name          String?     @unique
+    email         String?     @unique
+    emailVerified DateTime?
+    image         String?
+    isFirstLogin  Boolean     @default(true)
+    accounts      Account[]
+    sessions      Session[]
+    avatarUrl     String      @default("https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80")
+    bannerUrl     String      @default("https://images.unsplash.com/photo-1521109464564-2fa2faa95858?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=764&q=80")
+    posts         Post[]
+    replies       Reply[]
+    createdAt     DateTime    @default(now())
+    likes         Like[]
+    followers     Following[] @relation("UserFollowers")
+    following     Following[] @relation("UserFollowing")
+}
+
+model VerificationToken {
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
+
+model Post {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    toUserId  String
+    updatedAt DateTime @updatedAt
+    answer    String?
+    isPublic  Boolean  @default(false)
+    text      String
+    author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    authorId  String
+    likes     Like[]
+    replies   Reply[]
+}
+
+model Reply {
+    id        String   @id @default(cuid())
+    text      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    authorId  String
+    Post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+    postId    String
+}
+
+model Following {
+    id         Int    @id @default(autoincrement())
+    user       User   @relation("UserFollowing", fields: [userId], references: [id])
+    userId     String
+    follower   User   @relation("UserFollowers", fields: [followerId], references: [id])
+    followerId String
+}
+
+model Like {
+    id     String @id @default(cuid())
+    postId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String
+    Post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
