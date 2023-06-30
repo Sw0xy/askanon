@@ -1,5 +1,6 @@
 import { Loader2 } from "lucide-react";
 import type { GetStaticProps, GetStaticPropsContext, NextPage } from "next";
+import { useSession } from "next-auth/react";
 import Head from "next/head";
 import Layout from "~/components/layouts/layout";
 import Header from "~/components/user-profile/header";
@@ -12,11 +13,11 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
   const { data: user } = api.user.findByName.useQuery({
     name: username,
   });
-  const { data: me } = api.user.me.useQuery();
+  const { data: me } = useSession();
 
-  const isMe = me?.id === user?.id;
+  const isMe = me?.user?.id === user?.id;
 
-  if (!me)
+  if (!user)
     return (
       <div className="mx-auto">
         <Loader2 />
@@ -32,7 +33,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
           {user ? (
             <>
               <Header />
-              <UserHeader isMe={isMe} me={me} user={user as TUser} />
+              <UserHeader isMe={isMe} user={user as TUser} />
               <UserPostsList isMe={isMe} user={user as TUser} />
             </>
           ) : (
@@ -54,8 +55,6 @@ export const getStaticProps: GetStaticProps = async (
   if (typeof username !== "string") throw new Error("no username");
 
   await ssg.user.findByName.prefetch({ name: username });
-
-  await ssg.user.me.prefetch();
 
   return {
     props: {

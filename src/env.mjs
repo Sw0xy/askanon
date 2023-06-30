@@ -25,13 +25,6 @@ export const env = createEnv({
     DISCORD_CLIENT_SECRET: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
-    FIREBASE_apiKey: z.string(),
-    FIREBASE_authDomain: z.string(),
-    FIREBASE_projectId: z.string(),
-    FIREBASE_storageBucket: z.string(),
-    FIREBASE_messagingSenderId: z.string(),
-    FIREBASE_appId: z.string(),
-    FIREBASE_measurementId: z.string(),
   },
 
   /**
@@ -56,12 +49,5 @@ export const env = createEnv({
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    FIREBASE_apiKey: process.env.FIREBASE_apiKey,
-    FIREBASE_authDomain: process.env.FIREBASE_authDomain,
-    FIREBASE_projectId: process.env.FIREBASE_projectId,
-    FIREBASE_storageBucket: process.env.FIREBASE_storageBucket,
-    FIREBASE_messagingSenderId: process.env.FIREBASE_messagingSenderId,
-    FIREBASE_appId: process.env.FIREBASE_appId,
-    FIREBASE_measurementId: process.env.FIREBASE_measurementId,
   },
 });

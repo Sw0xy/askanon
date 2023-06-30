@@ -1,9 +1,10 @@
 import { type Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { type AppType } from "next/app";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 import { Toaster } from "~/components/ui/toaster";
-import { FirstLoginContext } from "~/contexts/first-login";
 import "~/styles/globals.css";
 import { api } from "~/utils/api";
 
@@ -14,10 +15,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <ThemeProvider attribute="class">
-        <FirstLoginContext>
-          <Component {...pageProps} />
-          <Toaster />
-        </FirstLoginContext>
+        <Component {...pageProps} />
+        <Toaster />
       </ThemeProvider>
     </SessionProvider>
   );

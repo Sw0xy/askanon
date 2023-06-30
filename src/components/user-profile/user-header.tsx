@@ -29,19 +29,12 @@ export interface TUser {
   posts: Post[];
   _count: { followers: number; following: number };
 }
-const UserHeader = ({
-  me,
-  isMe,
-  user,
-}: {
-  me: User;
-  isMe: boolean;
-  user: TUser;
-}) => {
+const UserHeader = ({ isMe, user }: { isMe: boolean; user: TUser }) => {
   const [avatar, setAvatarImage] = useState<File>();
   const [banner, setBannerImage] = useState<File>();
   const [progress, setProgress] = useState(0);
   const utils = api.useContext();
+  const { data: me } = api.user.me.useQuery();
   const { data: isFollowing } = api.user.getIsFollowing.useQuery({
     id: user.id,
   });
