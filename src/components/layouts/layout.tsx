@@ -1,3 +1,5 @@
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import MobileNavbar from "../home/mobile-navbar";
 import Sidebar from "../home/sidebar";
 import { WhoToFollowCard } from "./components/who-to-follow-card";
@@ -7,6 +9,11 @@ export default function Layout({
 }: {
   children?: JSX.Element;
 }): JSX.Element {
+  const router = useRouter();
+  const { status } = useSession();
+  if (status === "unauthenticated") {
+    void router.push("/signin");
+  }
   return (
     <>
       <main className="container mx-auto grid h-full min-h-screen w-full grid-cols-12 antialiased">
