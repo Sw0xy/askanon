@@ -58,14 +58,14 @@ const SignInPage = ({ providers }: { providers: Provider[] }) => {
             <p className="px-8 text-center text-sm text-muted-foreground">
               By clicking continue, you agree to our{" "}
               <Link
-                href="/terms"
+                href="/"
                 className="underline underline-offset-4 hover:text-primary"
               >
                 Terms of Service
               </Link>{" "}
               and{" "}
               <Link
-                href="/privacy"
+                href="/"
                 className="underline underline-offset-4 hover:text-primary"
               >
                 Privacy Policy
@@ -80,6 +80,7 @@ const SignInPage = ({ providers }: { providers: Provider[] }) => {
 };
 
 export default SignInPage;
+
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
