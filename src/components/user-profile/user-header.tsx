@@ -1,15 +1,9 @@
-import { type Post, type Reply, type User } from "@prisma/client";
-import {
-  getDownloadURL,
-  ref,
-  uploadBytesResumable,
-  type StorageReference,
-} from "firebase/storage";
+import { type Post, type Reply } from "@prisma/client";
 import { Calendar } from "lucide-react";
 import moment from "moment";
 import Image from "next/image";
 import { useState } from "react";
-import { storage } from "~/storage/storage";
+//import { s3 } from "~/s3/s3";
 import { api } from "~/utils/api";
 import { AspectRatio } from "../ui/aspect-ratio";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -18,6 +12,7 @@ import { Horizontal } from "../ui/horizontal";
 import { Vertical } from "../ui/vertical";
 import { EditProfileDialog } from "./edit-profile-dialog";
 import { UploadImageDialog } from "./upload-image-dialog";
+import axios from "axios";
 
 export interface TUser {
   id: string;
@@ -29,60 +24,42 @@ export interface TUser {
   posts: Post[];
   _count: { followers: number; following: number };
 }
+
 const UserHeader = ({ isMe, user }: { isMe: boolean; user: TUser }) => {
   const [avatar, setAvatarImage] = useState<File>();
   const [banner, setBannerImage] = useState<File>();
-  const [progress, setProgress] = useState(0);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
   const utils = api.useContext();
   const { data: me } = api.user.me.useQuery();
   const { data: isFollowing } = api.user.getIsFollowing.useQuery({
     id: user.id,
   });
-  const changeBannerMut = api.user.changeBanner.useMutation({
-    async onSuccess() {
-      await utils.user.me.invalidate();
-    },
-  });
-  const changeAvatarMut = api.user.changeAvatar.useMutation({
-    async onSuccess() {
-      await utils.user.me.invalidate();
-    },
-  });
+  const { mutateAsync: getUrl } = api.image.getUploadPresignedUrl.useMutation();
+  const { mutate: changeBannerMut, isLoading: bannerIsLoading } =
+    api.user.changeBanner.useMutation({
+      async onSuccess() {
+        await utils.user.me.invalidate();
+      },
+    });
+  const { mutate: changeAvatarMut, isLoading: avatarIsLoading } =
+    api.user.changeAvatar.useMutation({
+      async onSuccess() {
+        await utils.user.me.invalidate();
+      },
+    });
 
   const joinedAt = moment(user.createdAt).format("ll");
 
-  const getImageUrl = async (image: typeof banner) => {
+  const getImageUrl: (
+    image: File | undefined
+  ) => Promise<string | undefined> = async (image: typeof banner) => {
     if (!image) return;
-
-    const imageRef: StorageReference = ref(storage, `user/${image.name}`);
-
-    const uploadTask = uploadBytesResumable(imageRef, image);
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setProgress(progress);
-        switch (snapshot.state) {
-          case "paused":
-            console.log("Upload is paused");
-            break;
-          case "running":
-            console.log("Upload is running");
-            break;
-        }
-      },
-      (error) => {
-        // Handle unsuccessful uploads
-        console.log(error);
-      },
-      () => {
-        setProgress(0);
-      }
-    );
-
-    return await getDownloadURL(imageRef).then((url) => {
-      return url;
+    return await getUrl({
+      key: image.name,
+    }).then(({ signedUrl, fileUrl }) => {
+      setImageUrl(fileUrl);
+      return signedUrl;
     });
   };
 
@@ -98,28 +75,63 @@ const UserHeader = ({ isMe, user }: { isMe: boolean; user: TUser }) => {
     }
   };
 
-  const handleChangeAvatar = () => {
-    getImageUrl(avatar)
-      .then((url) => {
-        changeAvatarMut.mutate({
-          id: me?.id || "",
-          url: url || "",
-        });
-      })
-      .catch((err) => console.log(err));
-    setAvatarImage(undefined);
+  const handleChangeAvatar = async () => {
+    if (!avatar) return;
+
+    try {
+      await getImageUrl(avatar).then(async (url) => {
+        if (url !== undefined) {
+          await axios
+            .put(url, avatar, {
+              headers: { "Content-Type": avatar.type },
+            })
+            .then(({ data, status }) => {
+              if (!imageUrl) return;
+              console.log("res", data);
+              console.log(status);
+
+              changeAvatarMut({
+                id: me?.id || "",
+                url: imageUrl,
+              });
+
+              setImageUrl(null);
+              setAvatarImage(undefined);
+            });
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  const handleChangeBanner = () => {
-    getImageUrl(banner)
-      .then((url) => {
-        changeBannerMut.mutate({
-          id: me?.id || "",
-          url: url || "",
-        });
-      })
-      .catch((err) => console.log(err));
-    setBannerImage(undefined);
+  const handleChangeBanner = async () => {
+    if (!banner) return;
+    try {
+      await getImageUrl(banner).then(async (url) => {
+        if (url !== undefined) {
+          await axios
+            .put(url, banner.slice(), {
+              headers: { "Content-Type": banner.type },
+            })
+            .then((data) => {
+              if (!imageUrl) return;
+              if (!data) return;
+              console.log("res", data);
+
+              changeBannerMut({
+                id: me?.id || "",
+                url: imageUrl,
+              });
+
+              setImageUrl(null);
+              setAvatarImage(undefined);
+            });
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
   const followMutation = api.user.follow.useMutation({
     async onSuccess() {
@@ -155,10 +167,9 @@ const UserHeader = ({ isMe, user }: { isMe: boolean; user: TUser }) => {
             <div className="absolute z-10 hidden h-full w-full justify-end bg-black/50 p-2 group-hover:flex group-hover:items-end">
               <UploadImageDialog
                 type="banner"
-                handleChangeBanner={handleChangeBanner}
+                handleChange={handleChangeBanner}
                 uploadImage={uploadImage}
-                isLoading={changeBannerMut.isLoading}
-                progress={progress}
+                isLoading={bannerIsLoading}
               />
             </div>
           )}
@@ -177,10 +188,9 @@ const UserHeader = ({ isMe, user }: { isMe: boolean; user: TUser }) => {
             <div className="absolute z-10 hidden h-full w-full justify-end bg-black/50 p-2 group-hover:flex group-hover:items-end">
               <UploadImageDialog
                 type="banner"
-                handleChangeBanner={handleChangeBanner}
+                handleChange={handleChangeBanner}
                 uploadImage={uploadImage}
-                isLoading={changeBannerMut.isLoading}
-                progress={progress}
+                isLoading={bannerIsLoading}
               />
             </div>
           )}
@@ -193,10 +203,9 @@ const UserHeader = ({ isMe, user }: { isMe: boolean; user: TUser }) => {
             <div className="absolute -bottom-16 left-4 z-20 hidden h-24 w-24 justify-end rounded-full bg-black/50 p-2 group-hover:flex group-hover:items-center group-hover:justify-center md:left-7 md:h-32 md:w-32">
               <UploadImageDialog
                 type="avatar"
-                handleChangeBanner={handleChangeAvatar}
+                handleChange={handleChangeAvatar}
                 uploadImage={uploadImage}
-                isLoading={changeAvatarMut.isLoading}
-                progress={progress}
+                isLoading={avatarIsLoading}
               />
             </div>
           )}

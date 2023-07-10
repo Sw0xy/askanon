@@ -1,4 +1,5 @@
 import { ImageIcon, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -10,23 +11,19 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Input } from "../ui/input";
-import { useState } from "react";
-import { Progress } from "../ui/progress";
 const UploadImageDialog = ({
   type,
-  handleChangeBanner,
+  handleChange,
   uploadImage,
   isLoading,
-  progress,
 }: {
   type: "banner" | "avatar";
-  handleChangeBanner: () => void;
+  handleChange: () => Promise<void>;
   uploadImage: (
     e: React.ChangeEvent<HTMLInputElement>,
     type: "banner" | "avatar"
   ) => void;
   isLoading: boolean;
-  progress: number;
 }) => {
   const [isDisabled, setIsDisabled] = useState(true);
   return (
@@ -52,7 +49,6 @@ const UploadImageDialog = ({
               setIsDisabled(false);
             }}
           />
-          {progress > 0 && <Progress value={progress} className="my-4" />}
         </div>
         <DialogFooter>
           <Button
@@ -61,7 +57,7 @@ const UploadImageDialog = ({
             type="submit"
             className="rounded-full"
             onClick={() => {
-              handleChangeBanner();
+              void handleChange();
             }}
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

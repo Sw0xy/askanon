@@ -1,3 +1,5 @@
+import { env } from "./src/env.mjs";
+
 /**
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
@@ -18,15 +20,15 @@ const config = {
       },
       {
         protocol: "https",
+        hostname: `${env.AWS_BUCKET_NAME}.s3.${env.AWS_REGION}.amazonaws.com`,
+      },
+      {
+        protocol: "https",
         hostname: "firebasestorage.googleapis.com",
       },
       {
         protocol: "https",
         hostname: "cdn.discordapp.com",
-      },
-      {
-        protocol: "https",
-        hostname: "occ-0-2794-2219.1.nflxso.net",
       },
     ],
   },

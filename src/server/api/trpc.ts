@@ -16,7 +16,7 @@
  */
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
-
+import { s3 } from "../aws/s3";
 import { getServerAuthSession } from "~/server/auth";
 import { prisma } from "~/server/db";
 
@@ -38,6 +38,7 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
     prisma,
+    s3,
   };
 };
 
