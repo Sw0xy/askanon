@@ -27,7 +27,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: z.string(),
     AWS_BUCKET_NAME: z.string().min(1),
     AWS_REGION: z.string().min(1),
-    AWS_ACCESS_KEY: z.string().min(1),
+    AWS_ACCESS_KEY_ID: z.string().min(1),
     AWS_SECRET_KEY_ID: z.string().min(1),
   },
 
@@ -55,7 +55,7 @@ export const env = createEnv({
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
     AWS_REGION: process.env.AWS_REGION,
-    AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
+    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
     AWS_SECRET_KEY_ID: process.env.AWS_SECRET_KEY_ID,
   },
 });

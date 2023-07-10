@@ -4,7 +4,7 @@ import { env } from "~/env.mjs";
 export const s3 = new S3({
   region: env.AWS_REGION,
   credentials: {
-    accessKeyId: env.AWS_ACCESS_KEY,
+    accessKeyId: env.AWS_ACCESS_KEY_ID,
     secretAccessKey: env.AWS_SECRET_KEY_ID,
   },
 });
