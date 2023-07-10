@@ -85,10 +85,8 @@ const UserHeader = ({ isMe, user }: { isMe: boolean; user: TUser }) => {
             .put(url, avatar, {
               headers: { "Content-Type": avatar.type },
             })
-            .then(({ data, status }) => {
+            .then(() => {
               if (!imageUrl) return;
-              console.log("res", data);
-              console.log(status);
 
               changeAvatarMut({
                 id: me?.id || "",
@@ -114,10 +112,8 @@ const UserHeader = ({ isMe, user }: { isMe: boolean; user: TUser }) => {
             .put(url, banner.slice(), {
               headers: { "Content-Type": banner.type },
             })
-            .then((data) => {
+            .then(() => {
               if (!imageUrl) return;
-              if (!data) return;
-              console.log("res", data);
 
               changeBannerMut({
                 id: me?.id || "",
