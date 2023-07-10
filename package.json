@@ -12,7 +12,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.367.0",
     "@aws-sdk/s3-request-presigner": "^3.367.0",
-    "@firebase/storage-types": "^0.8.0",
     "@hookform/resolvers": "^3.1.0",
     "@next-auth/prisma-adapter": "^1.0.5",
     "@prisma/client": "^4.11.0",
@@ -43,7 +42,6 @@
     "clsx": "^1.2.1",
     "cmdk": "^0.2.0",
     "emoji-picker-react": "^4.4.9",
-    "firebase": "^9.22.0",
     "lucide-react": "^0.219.0",
     "moment": "^2.29.4",
     "next": "^13.4.1",
